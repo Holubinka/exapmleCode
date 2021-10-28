@@ -4,3 +4,4 @@ logs/
 # IDEs and editors
 /.idea
 /.history
+.env
