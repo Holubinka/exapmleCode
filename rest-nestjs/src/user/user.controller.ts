@@ -1,22 +1,25 @@
 import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { UserService } from './user.service';
-import { User } from './user.interface';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { User as UserModel } from '@prisma/client';
+import { UpdateUserDto } from './dto';
+import { User } from './user.decorator';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly usersService: UserService) {}
 
   @Get('/')
-  getAllUsers(): Promise<User[]> {
+  getAllUsers(): Promise<Partial<UserModel>[]> {
     return this.usersService.getAllUsers();
   }
 
+  @Get('/me')
+  getMe(@User('id') id: string): Promise<Partial<UserModel>> {
+    return this.usersService.getUserById(id);
+  }
+
   @Patch('/:id')
-  getDraftsByUser(
-    @Param('id') id: string,
-    @Body() body: UpdateUserDto,
-  ): Promise<User> {
+  update(@Param('id') id: string, @Body() body: UpdateUserDto): Promise<Partial<UserModel>> {
     return this.usersService.updateUser(id, body);
   }
 }
