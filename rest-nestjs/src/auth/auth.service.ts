@@ -3,14 +3,15 @@ import { CreateUserDto } from '../user/dto';
 import { JwtPayload, LoginStatus, RegistrationStatus } from './auth.interface';
 import { UserService } from '../user/user.service';
 import { LoginUserDto } from './dto';
-import { JwtService } from '@nestjs/jwt';
+import jwt from 'jsonwebtoken';
+
 import { User as UserModel } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import constants from '../constants';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UserService, private readonly jwtService: JwtService) {}
+  constructor(private readonly usersService: UserService) {}
 
   async register(userDto: CreateUserDto): Promise<RegistrationStatus> {
     let status: RegistrationStatus = {
@@ -20,6 +21,7 @@ export class AuthService {
 
     try {
       await this.usersService.createUser(userDto);
+      console.log('rty');
     } catch (err) {
       status = {
         success: false,
@@ -56,7 +58,7 @@ export class AuthService {
   }
 
   private _createToken({ id, email }: UserModel): any {
-    const accessToken = this.jwtService.sign({ id, email }, { secret: constants.authSecret });
+    const accessToken = jwt.sign({ id, email }, constants.authSecret);
 
     return {
       accessToken,

@@ -15,14 +15,20 @@ export class PostModule implements NestModule {
     consumer
       .apply(AuthMiddleware)
       .forRoutes(
-        { path: 'articles/feed', method: RequestMethod.GET },
-        { path: 'articles', method: RequestMethod.POST },
-        { path: 'articles/:id', method: RequestMethod.DELETE },
-        { path: 'articles/:id', method: RequestMethod.PUT },
-        { path: 'articles/:id/comments', method: RequestMethod.POST },
-        { path: 'articles/:postId/comments/:id', method: RequestMethod.DELETE },
-        { path: 'articles/:id/favorite', method: RequestMethod.POST },
-        { path: 'articles/:id/favorite', method: RequestMethod.DELETE },
+        { path: 'posts/feed', method: RequestMethod.GET },
+        { path: 'posts', method: RequestMethod.GET },
+        { path: 'posts', method: RequestMethod.POST },
+        { path: 'posts/:id', method: RequestMethod.DELETE },
+        { path: 'posts/:id', method: RequestMethod.PUT },
+        { path: 'posts/:id', method: RequestMethod.GET },
+        { path: 'posts/:id/comments', method: RequestMethod.POST },
+        { path: 'posts/:id/comments', method: RequestMethod.GET },
+        { path: 'posts/:postId/comments/:id', method: RequestMethod.DELETE },
+        { path: 'posts/:id/favorite', method: RequestMethod.POST },
+        { path: 'posts/:id/favorite', method: RequestMethod.DELETE },
+        { path: 'posts/:id/views', method: RequestMethod.PUT },
+        { path: 'posts/:id/publish', method: RequestMethod.PUT },
+        { path: 'posts/:id/drafts', method: RequestMethod.GET },
       );
   }
 }

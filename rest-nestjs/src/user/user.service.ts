@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { User as UserModel } from '@prisma/client';
-import { UpdateUserDto, CreateUserDto } from './dto';
+import { CreateUserDto, UpdateUserDto } from './dto';
 import * as argon2 from 'argon2';
 
 const select = {
@@ -47,8 +47,8 @@ export class UserService {
     });
   }
 
-  async createUser(userData: CreateUserDto): Promise<Partial<UserModel>> {
-    const userInDb = await this.getUserByEmail(userData.email);
+  async createUser(userData: CreateUserDto): Promise<any> {
+    const userInDb = await this.prismaService.user.findUnique({ where: { email: userData.email } });
 
     if (userInDb) {
       throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
@@ -56,8 +56,14 @@ export class UserService {
 
     const hashedPassword = await argon2.hash(userData.password);
 
-    return this.prismaService.user.create({
+    console.log({
       data: { ...userData, password: hashedPassword },
     });
+    const user = await this.prismaService.user.create({
+      data: { ...userData, password: hashedPassword },
+      select,
+    });
+
+    return { user };
   }
 }

@@ -4,7 +4,7 @@ import { User as UserModel } from '@prisma/client';
 import { UpdateUserDto } from './dto';
 import { User } from './user.decorator';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly usersService: UserService) {}
 
