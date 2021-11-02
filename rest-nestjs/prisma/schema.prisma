@@ -19,7 +19,7 @@ model User {
   firstName     String?
   lastName      String?
   bio           String?
-  posts         Post[]      @relation("UserArticles")
+  posts         Post[]      @relation("UserPosts")
   favorites     Post[]      @relation("UserFavorites", references: [id])
   comments      Comment[]
   followedBy    User[]      @relation("UserFollows", references: [id])
@@ -35,7 +35,7 @@ model Post {
   content       String?
   published     Boolean     @default(false)
   viewCount     Int         @default(0)
-  author        User?       @relation("UserArticles", fields: [authorId], references: [id])
+  author        User        @relation("UserPosts", fields: [authorId], references: [id])
   authorId      String      @db.ObjectId
   favoritedBy   User[]      @relation("UserFavorites", references: [id])
   comments      Comment[]

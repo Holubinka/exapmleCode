@@ -3,11 +3,11 @@ import { CreateUserDto } from '../user/dto';
 import { JwtPayload, LoginStatus, RegistrationStatus } from './auth.interface';
 import { UserService } from '../user/user.service';
 import { LoginUserDto } from './dto';
-import jwt from 'jsonwebtoken';
-
 import { User as UserModel } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import constants from '../constants';
+
+const jwt = require('jsonwebtoken');
 
 @Injectable()
 export class AuthService {
@@ -35,7 +35,7 @@ export class AuthService {
   async login({ email, password }: LoginUserDto): Promise<LoginStatus> {
     const user = await this.usersService.getUserByEmail(email);
 
-    const areEqual = await bcrypt.compare(user.password, password);
+    const areEqual = await bcrypt.compareSync(password, user.password);
 
     if (!areEqual) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
@@ -57,11 +57,7 @@ export class AuthService {
     return user;
   }
 
-  private _createToken({ id, email }: UserModel): any {
-    const accessToken = jwt.sign({ id, email }, constants.authSecret);
-
-    return {
-      accessToken,
-    };
+  private _createToken({ id, email }: UserModel): string {
+    return jwt.sign({ id, email }, constants.authSecret);
   }
 }

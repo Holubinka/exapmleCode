@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma.service';
 import { CreatePostDto } from './dto';
 import { Prisma } from '@prisma/client';
 import { CommentInterface, CommentsInterface, PostInterface, PostsInterface } from './post.interface';
+import { UserService } from '../user/user.service';
 
 const postAuthorSelect = {
   email: true,
@@ -41,7 +42,7 @@ const mapDynamicValues = (userId, { favoritedBy, author, ...rest }) => ({
 
 @Injectable()
 export class PostService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private userService: UserService) {}
 
   private static buildFindAllQuery(query): Prisma.Enumerable<Prisma.PostWhereInput> {
     const queries = [];
@@ -195,24 +196,16 @@ export class PostService {
   }
 
   async create({ authorEmail, ...payload }: CreatePostDto): Promise<PostInterface> {
-    const user = await this.prisma.user.findUnique({
-      select: {
-        id: true,
-      },
-      where: {
-        email: authorEmail,
-      },
-    });
+    const user = await this.userService.getUserByEmail(authorEmail);
 
-    const data = {
-      ...payload,
-      author: {
-        connect: { email: authorEmail },
-      },
-    };
-
+    console.dir({ include: postInclude }, { depth: null });
     let post: any = await this.prisma.post.create({
-      data,
+      data: {
+        ...payload,
+        author: {
+          connect: { id: user.id },
+        },
+      },
       include: postInclude,
     });
 
