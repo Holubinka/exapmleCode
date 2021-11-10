@@ -7,7 +7,7 @@ import { User as UserModel } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import constants from '../constants';
 
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -21,11 +21,10 @@ export class AuthService {
 
     try {
       await this.usersService.createUser(userDto);
-      console.log('rty');
-    } catch (err) {
+    } catch ({ message }) {
       status = {
         success: false,
-        message: err,
+        message,
       };
     }
 

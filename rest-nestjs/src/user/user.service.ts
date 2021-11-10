@@ -61,9 +61,20 @@ export class UserService {
   }
 
   async createUser(userData: CreateUserDto): Promise<UserRO> {
-    const userInDb = await this.prismaService.user.findUnique({ where: { email: userData.email } });
+    const userInDb = await this.prismaService.user.findMany({
+      where: {
+        OR: [
+          {
+            email: userData.email,
+          },
+          {
+            username: userData.username,
+          },
+        ],
+      },
+    });
 
-    if (userInDb) {
+    if (userInDb.length > 0) {
       throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
     }
 
