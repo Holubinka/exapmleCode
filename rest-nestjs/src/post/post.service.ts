@@ -209,8 +209,8 @@ export class PostService {
       include: postInclude,
     });
 
+    console.dir(post, { depth: null });
     post = mapDynamicValues(user.id, post);
-
     return { post };
   }
 

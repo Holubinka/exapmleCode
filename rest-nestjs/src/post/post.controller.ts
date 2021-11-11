@@ -8,7 +8,7 @@ import { User } from '../user/user.decorator';
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  @Get()
+  @Get('/')
   async findAll(@User('id') userId: string, @Query() query): Promise<PostsInterface> {
     return await this.postService.findAll(userId, query);
   }
@@ -28,7 +28,7 @@ export class PostController {
     return await this.postService.findComments(postId);
   }
 
-  @Post()
+  @Post('/')
   async create(@Body() postData: CreatePostDto): Promise<PostInterface> {
     return this.postService.create(postData);
   }
