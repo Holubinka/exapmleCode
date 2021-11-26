@@ -1,16 +1,26 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreateCommentDto, CreatePostDto } from './dto';
 import { CommentInterface, CommentsInterface, PostInterface, PostsInterface } from './post.interface';
-import { User } from '../user/user.decorator';
+import { User } from '../shared/decorators/user.decorator';
+import { HasRoles } from '../shared/decorators/role.decorator';
+import { Role } from '../user/user.interface';
+import { RolesGuard } from '../shared/guards/roles.guard';
 
 @Controller('posts')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Get('/')
-  async findAll(@User('id') userId: string, @Query() query): Promise<PostsInterface> {
-    return await this.postService.findAll(userId, query);
+  @HasRoles(Role.ADMIN)
+  @UseGuards(RolesGuard)
+  async findAll(@Query() query): Promise<PostsInterface> {
+    return await this.postService.findAll(query);
+  }
+
+  @Get('/my')
+  async findAllByUser(@User('id') userId: string, @Query() query): Promise<PostsInterface> {
+    return await this.postService.findAll(query, userId);
   }
 
   @Get('feed')
@@ -18,72 +28,72 @@ export class PostController {
     return await this.postService.findFeed(userId, query);
   }
 
-  @Get(':id')
-  async findOne(@User('id') userId: string, @Param('id') postId: string): Promise<PostInterface> {
-    return await this.postService.findOne(userId, postId);
+  @Get('/drafts')
+  async getDraftsByUser(@User('id') userId: string): Promise<PostsInterface> {
+    return await this.postService.getDrafts(userId);
   }
 
-  @Get(':id/comments')
-  async findComments(@Param('id') postId): Promise<CommentsInterface> {
-    return await this.postService.findComments(postId);
+  @Get(':slug')
+  async findOne(@User('id') userId: string, @Param('slug') slug: string): Promise<PostInterface> {
+    return await this.postService.findOne(userId, slug);
+  }
+
+  @Get(':slug/comments')
+  async findComments(@Param('slug') slug): Promise<CommentsInterface> {
+    return await this.postService.findComments(slug);
   }
 
   @Post('/')
-  async create(@Body() postData: CreatePostDto): Promise<PostInterface> {
-    return this.postService.create(postData);
+  async create(@User('id') userId: string, @Body() postData: CreatePostDto): Promise<PostInterface> {
+    return this.postService.create(userId, postData);
   }
 
-  @Put(':id')
+  @Put(':slug')
   async update(
     @User('id') userId: string,
-    @Param('id') postId,
+    @Param('slug') slug,
     @Body('article') articleData: CreatePostDto,
   ): Promise<PostInterface> {
-    return this.postService.update(userId, postId, articleData);
+    return this.postService.update(userId, slug, articleData);
   }
 
-  @Delete(':id')
-  async delete(@Param('id') id): Promise<void> {
-    return this.postService.delete(id);
+  @Delete(':slug')
+  async delete(@Param('slug') slug): Promise<void> {
+    return this.postService.delete(slug);
   }
 
-  @Post(':id/comments')
+  @Post(':slug/comments')
   async createComment(
     @User('id') userId: string,
-    @Param('id') postId,
+    @Param('slug') slug,
     @Body('comment') payload: CreateCommentDto,
   ): Promise<CommentInterface> {
-    return await this.postService.addComment(userId, postId, payload);
+    return await this.postService.addComment(userId, slug, payload);
   }
 
-  @Delete(':postId/comments/:id')
+  @Delete(':slug/comments/:id')
   async deleteComment(@Param() params): Promise<void> {
-    const { postId, id } = params;
-    return await this.postService.deleteComment(postId, id);
+    const { slug, id } = params;
+    return await this.postService.deleteComment(slug, id);
   }
 
-  @Post(':id/favorite')
-  async favorite(@User('id') userId: string, @Param('id') postId): Promise<PostInterface> {
-    return await this.postService.favorite(userId, postId);
+  @Post(':slug/favorite')
+  async favorite(@User('id') userId: string, @Param('slug') slug): Promise<PostInterface> {
+    return await this.postService.toggleFavorite(userId, slug, true);
   }
 
-  @Delete(':id/favorite')
-  async unFavorite(@User('id') userId: string, @Param('id') postId): Promise<PostInterface> {
-    return await this.postService.unFavorite(userId, postId);
+  @Delete(':slug/favorite')
+  async unFavorite(@User('id') userId: string, @Param('slug') slug): Promise<PostInterface> {
+    return await this.postService.toggleFavorite(userId, slug, false);
   }
 
-  @Put(':id/views')
-  async incrementPostViewCount(@Param('id') id: string): Promise<PostInterface> {
-    return await this.postService.views(id);
+  @Put(':slug/views')
+  async incrementPostViewCount(@Param('slug') slug: string): Promise<PostInterface> {
+    return await this.postService.views(slug);
   }
 
-  @Put(':id/publish')
-  async togglePublishPost(@User('id') userId: string, @Param('id') id: string): Promise<PostInterface> {
-    return await this.postService.publish(userId, id);
-  }
-
-  @Get(':id/drafts')
-  async getDraftsByUser(@User('id') userId: string): Promise<PostsInterface> {
-    return await this.postService.getDrafts(userId);
+  @Put(':slug/publish')
+  async publishPost(@User('id') userId: string, @Param('slug') slug: string): Promise<PostInterface> {
+    return await this.postService.publish(userId, slug);
   }
 }

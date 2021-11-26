@@ -16,6 +16,7 @@ model User {
   email         String      @unique
   username      String      @unique
   password      String
+  role          Role        @default(USER)
   firstName     String?
   lastName      String?
   bio           String?
@@ -34,6 +35,7 @@ model Post {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   title           String
+  slug            String      @unique
   description     String
   content         String?
   published       Boolean     @default(false)
@@ -54,4 +56,9 @@ model Comment {
   postId      String        @db.ObjectId
   author      User          @relation(fields: [authorId], references: [id])
   authorId    String        @db.ObjectId
+}
+
+enum Role {
+  ADMIN       @map("admin")
+  USER        @map("user")
 }

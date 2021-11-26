@@ -11,3 +11,15 @@ export interface ProfileData {
   bio: string;
   following?: boolean;
 }
+
+export interface User extends UserData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: Role;
+}
+
+export enum Role {
+  ADMIN = 'admin',
+  USER = 'user',
+}

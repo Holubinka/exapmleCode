@@ -18,6 +18,7 @@ export class PostModule implements NestModule {
         { path: 'posts/feed', method: RequestMethod.GET },
         { path: 'posts', method: RequestMethod.GET },
         { path: 'posts', method: RequestMethod.POST },
+        { path: 'posts/my', method: RequestMethod.GET },
         { path: 'posts/:id', method: RequestMethod.DELETE },
         { path: 'posts/:id', method: RequestMethod.PUT },
         { path: 'posts/:id', method: RequestMethod.GET },

@@ -1,26 +1,38 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto';
-import { User } from './user.decorator';
-import { ProfileData, UserData } from './user.interface';
+import { User } from '../shared/decorators/user.decorator';
+import { ProfileData, Role, UserData } from './user.interface';
+import { HasRoles } from '../shared/decorators/role.decorator';
+import { RolesGuard } from '../shared/guards/roles.guard';
+import { User as UserModel } from '@prisma/client';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly usersService: UserService) {}
 
   @Get('/')
+  @HasRoles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   getAllUsers(): Promise<UserData[]> {
     return this.usersService.getAllUsers();
   }
 
   @Get('/me')
-  getMe(@User('id') id: string): Promise<UserData> {
+  getMe(@User('id') id: string): Promise<Partial<UserModel>> {
     return this.usersService.getUserById(id);
   }
 
   @Patch('/')
   update(@User('id') id: string, @Body() body: UpdateUserDto): Promise<UserData> {
     return this.usersService.updateUser(id, body);
+  }
+
+  @Delete(':username')
+  @HasRoles(Role.ADMIN)
+  @UseGuards(RolesGuard)
+  async deleteUser(@Param('username') username: string): Promise<any> {
+    return await this.usersService.deleteUser(username);
   }
 
   @Post(':username/follow')

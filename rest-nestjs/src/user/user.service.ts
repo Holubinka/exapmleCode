@@ -28,10 +28,10 @@ export class UserService {
     return await this.prismaService.user.findMany({ select: userSelect });
   }
 
-  async getUserById(id: string): Promise<UserData> {
+  async getUserById(id: string): Promise<Partial<UserModel>> {
     const user = await this.prismaService.user.findUnique({
       where: { id },
-      select: { id: true, ...userSelect },
+      select: { ...profileSelect, id: false },
     });
 
     if (!user) {
@@ -51,12 +51,36 @@ export class UserService {
     return user;
   }
 
+  async getUserByUsername(username: string): Promise<UserModel> {
+    const user = await this.prismaService.user.findUnique({ where: { username } });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    return user;
+  }
+
   async updateUser(id: string, userData: UpdateUserDto): Promise<UserData> {
     return await this.prismaService.user.update({
       where: { id },
       data: userData,
       select: userSelect,
     });
+  }
+
+  async deleteUser(username: string): Promise<any> {
+    const user = await this.getUserByUsername(username);
+
+    if (user) {
+      await this.prismaService.user.delete({
+        where: { username },
+      });
+      return {
+        success: true,
+        message: 'User successfully deleted',
+      };
+    }
   }
 
   async createUser(userData: CreateUserDto): Promise<UserData> {
@@ -103,36 +127,37 @@ export class UserService {
       throw new HttpException('Follower and FollowingId cannot be equal.', HttpStatus.BAD_REQUEST);
     }
 
-    if (followed.followedByIDs.includes(userId)) {
+    if (followed.followedByIDs.includes(userId) && toggleFollow) {
       throw new HttpException('You are already following for this user', HttpStatus.BAD_REQUEST);
+    }
+
+    if (!followed.followedByIDs.includes(userId) && !toggleFollow) {
+      throw new HttpException('You are already unFollowing for this user', HttpStatus.BAD_REQUEST);
     }
 
     await this.prismaService.user.update({
       where: { id: userId },
+      select: profileSelect,
       data: {
         following: toggleFollow
           ? {
               ...{
-                connect: [
-                  {
-                    id: followed.id,
-                  },
-                ],
+                connect: {
+                  id: followed.id,
+                },
               },
             }
           : {
               ...{
-                disconnect: [
-                  {
-                    id: followed.id,
-                  },
-                ],
+                disconnect: {
+                  id: followed.id,
+                },
               },
             },
       },
     });
 
-    const { id, ...rest } = followed;
+    const { id, followedByIDs, ...rest } = followed;
     return {
       ...rest,
       following: toggleFollow,

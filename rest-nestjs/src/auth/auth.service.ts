@@ -13,8 +13,8 @@ const jwt = require('jsonwebtoken');
 export class AuthService {
   constructor(private readonly usersService: UserService) {}
 
-  private static _createToken({ id, email }: UserModel): string {
-    return jwt.sign({ id, email }, constants.authSecret);
+  private static _createToken({ id, email, role }: UserModel): string {
+    return jwt.sign({ id, email, role }, constants.authSecret);
   }
 
   async register(userDto: CreateUserDto): Promise<RegistrationStatus> {
