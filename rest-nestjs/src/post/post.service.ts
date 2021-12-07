@@ -74,7 +74,10 @@ export class PostService {
     const andQueries = PostService.buildFindAllQuery(query);
 
     let posts = await this.prisma.post.findMany({
-      where: { published: true, ...(andQueries && { AND: andQueries }) },
+      where: {
+        ...(userId && { published: true, authorId: userId }),
+        ...(andQueries && { AND: andQueries }),
+      },
       include: postInclude,
       ...('limit' in query ? { take: +query.limit } : {}),
       ...('offset' in query ? { skip: +query.offset } : {}),
@@ -82,7 +85,10 @@ export class PostService {
       orderBy: { updatedAt: 'desc' },
     });
     const postsCount = await this.prisma.post.count({
-      where: { ...(andQueries && { AND: andQueries }) },
+      where: {
+        ...(userId && { published: true, authorId: userId }),
+        ...(andQueries && { AND: andQueries }),
+      },
       orderBy: { updatedAt: 'desc' },
     });
 
