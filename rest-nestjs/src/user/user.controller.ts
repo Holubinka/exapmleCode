@@ -20,7 +20,7 @@ export class UserController {
 
   @Get('/me')
   getMe(@User('id') id: string): Promise<Partial<UserModel>> {
-    return this.usersService.getUserById(id);
+    return this.usersService.getUserById(id, { id: false });
   }
 
   @Patch('/')

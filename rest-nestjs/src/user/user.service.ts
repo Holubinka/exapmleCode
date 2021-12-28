@@ -28,10 +28,10 @@ export class UserService {
     return await this.prismaService.user.findMany({ select: userSelect });
   }
 
-  async getUserById(id: string): Promise<Partial<UserModel>> {
+  async getUserById(id: string, options: any = {}): Promise<Partial<UserModel>> {
     const user = await this.prismaService.user.findUnique({
       where: { id },
-      select: { ...profileSelect, id: false },
+      select: { ...profileSelect, ...options },
     });
 
     if (!user) {

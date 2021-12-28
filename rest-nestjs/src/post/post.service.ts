@@ -196,7 +196,15 @@ export class PostService {
   }
 
   async create(userId: string, payload): Promise<PostInterface> {
-    let post: any = await this.prisma.post.create({
+    let post: any = await this.prisma.post.findUnique({
+      where: { slug: this.generateSlug(payload.title) },
+    });
+
+    if (post) {
+      throw new HttpException('A post with this title already exists', HttpStatus.BAD_REQUEST);
+    }
+
+    post = await this.prisma.post.create({
       data: {
         ...payload,
         slug: this.generateSlug(payload.title),
@@ -259,9 +267,6 @@ export class PostService {
   async publish(userId: string, slug: string): Promise<PostInterface> {
     const postData = await this.prisma.post.findUnique({
       where: { slug },
-      select: {
-        published: false,
-      },
     });
 
     if (!postData) {
